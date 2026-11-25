@@ -36,7 +36,7 @@ a{color:#7cc4ff;text-decoration:none}
 .inv li{font-size:12px;color:#c7d2dd;padding:3px 2px 3px 10px;border-bottom:1px solid #16202b}
 .inv li:last-child{border-bottom:none}
 .auth{max-width:460px;margin:70px auto;padding:24px;background:#121a23;border:1px solid #22303e;border-radius:16px}.auth h1{font-size:26px}.auth p{margin:16px 0;font-size:16px}.auth button,#toolbar button{font:inherit;min-height:44px;padding:10px 18px;border-radius:8px;border:1px solid #43677e;background:#18354a;color:#e8edf2;cursor:pointer}#toolbar{max-width:640px;margin:0 auto 14px;text-align:end}.it summary{min-height:48px}.chip{min-height:44px;font-size:13px}.it .nm{font-size:15px}.more{font-size:14px}.stamp{font-size:12px}summary:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #7cc4ff;outline-offset:3px}body{overflow-wrap:anywhere} [hidden]{display:none!important}
-.ins{display:flex;gap:6px;align-items:center;padding:0 12px 10px}
+.ins{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:0 12px 10px}
 .inv li .ins{padding:2px 0 4px}
 .ins-in{flex:1;font:inherit;font-size:12.5px;color:#e8edf2;background:#0e1620;border:1px solid #22303e;border-radius:8px;padding:6px 9px;min-height:34px}
 .ins-in::placeholder{color:#5d7080}
@@ -44,6 +44,8 @@ a{color:#7cc4ff;text-decoration:none}
 .ins-st.saved{color:#e0a63f;border-color:#4a3a12}
 .ins-st.received{color:#7cc4ff;border-color:#1d3a52}
 .ins-st.done{color:#4cc38a;border-color:#1d3a2c}
+.ins-st.superseded{color:#8a8f98;border-color:#3a3f48;text-decoration:line-through}
+.ins-note{display:block;flex:1 1 100%;font-size:11px;color:#c9a54a;padding:2px 2px 0}
 #updbar{position:fixed;bottom:0;left:0;right:0;background:#0b0f14;border-top:1px solid #22303e;padding:10px 12px;display:flex;gap:10px;align-items:center;justify-content:center;z-index:50}
 #updbar button{font:inherit;font-weight:800;min-height:46px;padding:10px 34px;border-radius:10px;border:1px solid #43677e;background:#18354a;color:#e8edf2;cursor:pointer}
 #updbar button:disabled{opacity:.5;cursor:default}
@@ -84,10 +86,11 @@ function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 function hhmm(ts){const d=new Date(ts);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 function ddmm(ts){const d=new Date(ts);return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0');}
 const lastByKey={};
-function setBadge(key,state,ts){dash.querySelectorAll('[data-k="'+key+'"] .ins-st').forEach(b=>{const M={saved:'נשמרה',received:'התקבלה',done:'בוצעה'};b.textContent=(M[state]||'')+(ts?' · '+hhmm(ts):'');b.className='ins-st'+(state?' '+state:'');});}
-function addIns(hostEl,taskText){const key=hkey(taskText.trim());const d=document.createElement('div');d.className='ins';d.dataset.k=key;d.innerHTML='<input class="ins-in" type="text" placeholder="הוראה למשימה הזאת…" aria-label="הוראה למשימה: '+esc(taskText.trim().slice(0,60))+'"><span class="ins-st"></span>';hostEl.appendChild(d);const last=lastByKey[key];if(last)setBadge(key,last.status,last.statusTs||last.ts);return d;}
+function setBadge(key,state,ts,note){dash.querySelectorAll('[data-k="'+key+'"]').forEach(d=>{const b=d.querySelector('.ins-st');const M={saved:'נשמרה',received:'התקבלה',done:'בוצעה',superseded:'הוחלפה'};b.textContent=(M[state]||'')+(ts?' · '+hhmm(ts):'');b.className='ins-st'+(state?' '+state:'');const n=d.querySelector('.ins-note');if(n){n.textContent=note||'';n.hidden=!note;}});}
+const MIGRATE={'thl7nj921':'c-אירועים-היום-מהצהריים','t1qa398a24':'c-מעקב-30-יוצרים-בלינקדאין','tuvv0va24':'c-מעקב-שיבוצים-כל-3-שעות','t1l3crd019':'c-שגרות-יומיות-נוספות','t1a67nqd32':'c-twilio-אישור-הקמה-ושיחת-ניסיון','tladkpz40':'c-one-pager-kaliprove-מענה-ntt-לאסף-גרין','tiugdih29':'c-תשובה-להקדמת-מועדון-energycom','t1sce3om36':'c-תודה-בקשת-פגישה-ל־takashi-nakamizo','t4kpkxs27':'c-החלטת-ai-salon-על-kaliprove','t16x8cqh36':'c-קישורי-לימוד-כניסה-לאפליקציית-תנ״ך','tdi2uid50':'i-חידוש-קשרים-עסקיים-לקראת-לקוחות-הכנסה-או','t1i7v09v55':'i-sharpen-disconnected-sensors-venture-mes'};
+function addIns(hostEl,taskText){const key=(hostEl.dataset&&hostEl.dataset.tid)?hostEl.dataset.tid:hkey(taskText.trim());const d=document.createElement('div');d.className='ins';d.dataset.k=key;d.innerHTML='<input class="ins-in" type="text" placeholder="הוראה למשימה הזאת…" aria-label="הוראה למשימה: '+esc(taskText.trim().slice(0,60))+'"><span class="ins-st"></span><span class="ins-note" hidden></span>';hostEl.appendChild(d);const last=lastByKey[key];if(last)setBadge(key,last.status,last.statusTs||last.ts,last.note);return d;}
 function injectIns(){dash.querySelectorAll('details.it').forEach(it=>{const nm=it.querySelector('.nm');if(nm)addIns(it,nm.textContent);});dash.querySelectorAll('.inv li').forEach(li=>{addIns(li,li.textContent);});}
-async function loadStatuses(){try{const snap=await get(ref(db,'instructions'));if(!snap.exists())return;const all=snap.val();for(const b of Object.values(all)){if(!b||typeof b!=='object')continue;for(const it of Object.values(b)){if(!it||!it.key)continue;const cur=lastByKey[it.key];if(!cur||(it.ts||0)>=(cur.ts||0))lastByKey[it.key]=it;}}}catch(e){console.error('statuses',e.code||e.message);}}
+async function loadStatuses(){try{const snap=await get(ref(db,'instructions'));if(!snap.exists())return;const all=snap.val();for(const b of Object.values(all)){if(!b||typeof b!=='object')continue;for(const it of Object.values(b)){if(!it||!it.key)continue;const k=MIGRATE[it.key]||it.key;const cur=lastByKey[k];if(!cur||(it.ts||0)>=(cur.ts||0))lastByKey[k]=it;}}}catch(e){console.error('statuses',e.code||e.message);}}
 async function sendMail(tok,items,ts){const subj='הוראות מהממשק · '+ddmm(ts)+' '+hhmm(ts);
 const body=items.map(it=>'משימה: '+it.task+'\nהוראה: '+it.text).join('\n---\n');
 const mime='To: '+auth.currentUser.email+'\r\nSubject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?=\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n'+body;
