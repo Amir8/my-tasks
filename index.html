@@ -1,6 +1,6 @@
 <!doctype html><html dir="rtl" lang="he"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>המשימות שלי</title><style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0b0f14;color:#e8edf2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Heebo","Arial Hebrew",Arial,sans-serif;padding:14px 12px 30px;line-height:1.45}
+body{background:#0b0f14;color:#e8edf2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Heebo","Arial Hebrew",Arial,sans-serif;padding:14px 12px 90px;line-height:1.45}
 .wrap{max-width:640px;margin:0 auto}
 .top{display:flex;justify-content:space-between;align-items:center;padding:2px 2px 8px}
 h1{font-size:18px;font-weight:800}
@@ -35,33 +35,75 @@ a{color:#7cc4ff;text-decoration:none}
 .inv ul{list-style:none}
 .inv li{font-size:12px;color:#c7d2dd;padding:3px 2px 3px 10px;border-bottom:1px solid #16202b}
 .inv li:last-child{border-bottom:none}
-.auth{max-width:460px;margin:70px auto;padding:24px;background:#121a23;border:1px solid #22303e;border-radius:16px}.auth h1{font-size:26px}.auth p{margin:16px 0;font-size:16px}.auth button,#toolbar button{font:inherit;min-height:44px;padding:10px 18px;border-radius:8px;border:1px solid #43677e;background:#18354a;color:#e8edf2;cursor:pointer}#toolbar{max-width:640px;margin:0 auto 14px;text-align:end}.it summary{min-height:48px}.chip{min-height:44px;font-size:13px}.it .nm{font-size:15px}.more{font-size:14px}.stamp{font-size:12px}summary:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #7cc4ff;outline-offset:3px}body{overflow-wrap:anywhere} [hidden]{display:none!important}
-</style></head><body><main id="login" class="auth"><h1>המשימות שלי</h1><p>כניסה לחשבון הגוגל המורשה כדי לצפות במשימות.</p><button id="signin" type="button">כניסה עם Google</button><p id="status" role="status"></p></main><div id="toolbar" hidden><button id="signout" type="button">יציאה</button></div><main id="dashboard" hidden></main><script type="module">import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js';
+.auth{max-width:460px;margin:70px auto;padding:24px;background:#121a23;border:1px solid #22303e;border-radius:16px}.auth h1{font-size:26px}.auth p{margin:16px 0;font-size:16px}.auth button,#toolbar button{font:inherit;min-height:44px;padding:10px 18px;border-radius:8px;border:1px solid #43677e;background:#18354a;color:#e8edf2;cursor:pointer}#toolbar{max-width:640px;margin:0 auto 14px;text-align:end}.it summary{min-height:48px}.chip{min-height:44px;font-size:13px}.it .nm{font-size:15px}.more{font-size:14px}.stamp{font-size:12px}summary:focus-visible,button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #7cc4ff;outline-offset:3px}body{overflow-wrap:anywhere} [hidden]{display:none!important}
+.ins{display:flex;gap:6px;align-items:center;padding:0 12px 10px}
+.inv li .ins{padding:2px 0 4px}
+.ins-in{flex:1;font:inherit;font-size:12.5px;color:#e8edf2;background:#0e1620;border:1px solid #22303e;border-radius:8px;padding:6px 9px;min-height:34px}
+.ins-in::placeholder{color:#5d7080}
+.ins-st{font-size:10px;font-weight:700;white-space:nowrap;padding:2px 8px;border-radius:999px;border:1px solid #2a3a4a;color:#7d8fa1}
+.ins-st.saved{color:#e0a63f;border-color:#4a3a12}
+.ins-st.received{color:#7cc4ff;border-color:#1d3a52}
+.ins-st.done{color:#4cc38a;border-color:#1d3a2c}
+#updbar{position:fixed;bottom:0;left:0;right:0;background:#0b0f14;border-top:1px solid #22303e;padding:10px 12px;display:flex;gap:10px;align-items:center;justify-content:center;z-index:50}
+#updbar button{font:inherit;font-weight:800;min-height:46px;padding:10px 34px;border-radius:10px;border:1px solid #43677e;background:#18354a;color:#e8edf2;cursor:pointer}
+#updbar button:disabled{opacity:.5;cursor:default}
+#updmsg{font-size:11.5px;color:#8fa3b8;max-width:60%}
+</style></head><body><main id="login" class="auth"><h1>המשימות שלי</h1><p>כניסה לחשבון הגוגל המורשה כדי לצפות במשימות.</p><button id="signin" type="button">כניסה עם Google</button><p id="status" role="status"></p></main><div id="toolbar" hidden><button id="signout" type="button">יציאה</button></div><main id="dashboard" hidden></main><div id="updbar" hidden><button id="upd" type="button">עדכן</button><span id="updmsg" role="status"></span></div><script type="module">import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js';
 import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut,browserSessionPersistence,setPersistence} from 'https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js';
-import {getDatabase,ref,get} from 'https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js';
+import {getDatabase,ref,get,update} from 'https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js';
 const firebaseConfig = {
 
-  apiKey: "AIzaSyBumBEFjK5_mHgvw8nXSxafxELKTHaF-5I",
+  apiKey: "AIzaSyBumBEFjK5_mHgvw8nXSxafxELKTHaF-5I",
 
-  authDomain: "amir-tasks-426a4.firebaseapp.com",
+  authDomain: "amir-tasks-426a4.firebaseapp.com",
 
-  databaseURL: "https://amir-tasks-426a4-default-rtdb.europe-west1.firebasedatabase.app",
+  databaseURL: "https://amir-tasks-426a4-default-rtdb.europe-west1.firebasedatabase.app",
 
-  projectId: "amir-tasks-426a4",
+  projectId: "amir-tasks-426a4",
 
-  storageBucket: "amir-tasks-426a4.firebasestorage.app",
+  storageBucket: "amir-tasks-426a4.firebasestorage.app",
 
-  messagingSenderId: "662894635571",
+  messagingSenderId: "662894635571",
 
-  appId: "1:662894635571:web:4a921d612ff279b2ecd146"
+  appId: "1:662894635571:web:4a921d612ff279b2ecd146"
 
 };
 
 const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getDatabase(app);
-const login=document.getElementById('login'), dash=document.getElementById('dashboard'), toolbar=document.getElementById('toolbar'), status=document.getElementById('status');
+const login=document.getElementById('login'), dash=document.getElementById('dashboard'), toolbar=document.getElementById('toolbar'), status=document.getElementById('status'), updbar=document.getElementById('updbar'), upd=document.getElementById('upd'), updmsg=document.getElementById('updmsg');
 await setPersistence(auth,browserSessionPersistence);
-document.getElementById('signin').onclick=async()=>{status.textContent='פותח כניסה מאובטחת…';try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(e){status.textContent='הכניסה לא הושלמה. אפשר לנסות שוב.';console.error(e.code)}};
-document.getElementById('signout').onclick=()=>signOut(auth);
+const provider=new GoogleAuthProvider();
+provider.addScope('https://www.googleapis.com/auth/gmail.send');
+function saveToken(res){try{const c=GoogleAuthProvider.credentialFromResult(res);if(c&&c.accessToken)sessionStorage.setItem('gtok',JSON.stringify({t:c.accessToken,exp:Date.now()+50*60*1000}));}catch(e){}}
+async function ensureToken(){try{const s=JSON.parse(sessionStorage.getItem('gtok')||'null');if(s&&s.exp>Date.now())return s.t;}catch(e){}
+const res=await signInWithPopup(auth,provider);saveToken(res);const s=JSON.parse(sessionStorage.getItem('gtok')||'null');if(!s||!s.t)throw Error('no-token');return s.t;}
+document.getElementById('signin').onclick=async()=>{status.textContent='פותח כניסה מאובטחת…';try{const res=await signInWithPopup(auth,provider);saveToken(res);}catch(e){status.textContent='הכניסה לא הושלמה. אפשר לנסות שוב.';console.error(e.code)}};
+document.getElementById('signout').onclick=()=>{sessionStorage.removeItem('gtok');signOut(auth);};
+function hkey(t){let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))>>>0;return 't'+h.toString(36)+t.length;}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function hhmm(ts){const d=new Date(ts);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function ddmm(ts){const d=new Date(ts);return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0');}
+const lastByKey={};
+function setBadge(key,state,ts){const b=dash.querySelector('[data-k="'+key+'"] .ins-st');if(!b)return;const M={saved:'נשמרה',received:'התקבלה',done:'בוצעה'};b.textContent=(M[state]||'')+(ts?' · '+hhmm(ts):'');b.className='ins-st'+(state?' '+state:'');}
+function addIns(hostEl,taskText){const key=hkey(taskText.trim());const d=document.createElement('div');d.className='ins';d.dataset.k=key;d.innerHTML='<input class="ins-in" type="text" placeholder="הוראה למשימה הזאת…" aria-label="הוראה למשימה: '+esc(taskText.trim().slice(0,60))+'"><span class="ins-st"></span>';hostEl.appendChild(d);const last=lastByKey[key];if(last)setBadge(key,last.status,last.statusTs||last.ts);return d;}
+function injectIns(){dash.querySelectorAll('details.it').forEach(it=>{const nm=it.querySelector('.nm');if(nm)addIns(it,nm.textContent);});dash.querySelectorAll('.inv li').forEach(li=>{addIns(li,li.textContent);});}
+async function loadStatuses(){try{const snap=await get(ref(db,'instructions'));if(!snap.exists())return;const all=snap.val();for(const b of Object.values(all)){if(!b||typeof b!=='object')continue;for(const it of Object.values(b)){if(!it||!it.key)continue;const cur=lastByKey[it.key];if(!cur||(it.ts||0)>=(cur.ts||0))lastByKey[it.key]=it;}}}catch(e){console.error('statuses',e.code||e.message);}}
+async function sendMail(tok,items,ts){const subj='הוראות מהממשק · '+ddmm(ts)+' '+hhmm(ts);
+const body=items.map(it=>'משימה: '+it.task+'\nהוראה: '+it.text).join('\n---\n');
+const mime='To: '+auth.currentUser.email+'\r\nSubject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subj)))+'?=\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n'+body;
+const raw=btoa(unescape(encodeURIComponent(mime))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({raw})});
+if(!r.ok)throw Error('gmail-'+r.status);}
+upd.onclick=async()=>{if(upd.disabled)return;
+const items=[];dash.querySelectorAll('.ins').forEach(d=>{const inp=d.querySelector('.ins-in');const v=inp.value.trim();if(!v)return;const last=lastByKey[d.dataset.k];if(last&&last.text===v&&(last.status==='saved'||last.status==='received'))return;items.push({key:d.dataset.k,task:(d.closest('details.it')?d.closest('details.it').querySelector('.nm').textContent:d.closest('li').childNodes[0].textContent).trim(),text:v,inp});});
+if(!items.length){updmsg.textContent='אין הוראות חדשות לשליחה';return;}
+upd.disabled=true;updmsg.textContent='שומר ושולח…';
+const ts=Date.now(),batch='b'+ts,updates={};
+items.forEach((it,i)=>{updates['instructions/'+batch+'/'+i]={key:it.key,task:it.task,text:it.text,ts,status:'saved'};});
+try{await update(ref(db),updates);}catch(e){updmsg.textContent='השמירה נכשלה - לא נשלח דבר. נסה שוב.';console.error(e.code||e.message);upd.disabled=false;return;}
+try{const tok=await ensureToken();await sendMail(tok,items,ts);}catch(e){updmsg.textContent='נשמר במסד, אבל השליחה נכשלה ('+(e.message||e)+'). נסה שוב - ההוראות עדיין בשדות.';console.error(e);upd.disabled=false;return;}
+items.forEach(it=>{lastByKey[it.key]={key:it.key,task:it.task,text:it.text,ts,status:'saved'};it.inp.value='';setBadge(it.key,'saved',ts);});
+updmsg.textContent='נשמר ונשלח · '+items.length+' '+(items.length===1?'הוראה':'הוראות')+' · '+hhmm(ts);upd.disabled=false;};
 let request=0;
-onAuthStateChanged(auth,async user=>{const current=++request;dash.replaceChildren();dash.hidden=true;toolbar.hidden=true;login.hidden=false;if(!user){status.textContent='';return;}status.textContent='בודק הרשאה וטוען את המשימות…';try{const snap=await get(ref(db,'dashboard'));if(!snap.exists())throw Error('empty');if(current!==request || auth.currentUser?.uid!==user.uid)return;const data=snap.val();dash.innerHTML=typeof data==='string'?data:data.html;dash.querySelectorAll('script,iframe,object,embed,form').forEach(x=>x.remove());dash.querySelectorAll('*').forEach(el=>[...el.attributes].forEach(a=>{if(a.name.startsWith('on'))el.removeAttribute(a.name)}));dash.querySelectorAll('a').forEach(a=>{if(!/^https:\/\//i.test(a.getAttribute('href')||''))a.removeAttribute('href');a.target='_blank';a.rel='noopener noreferrer'});dash.querySelectorAll('.chip').forEach(c=>{c.setAttribute('role','button');c.tabIndex=0;const act=()=>{dash.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');let f=c.dataset.f;dash.querySelectorAll('.it').forEach(it=>it.hidden=!(f==='all'||it.dataset.s===f));};c.onclick=act;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}}});login.hidden=true;dash.hidden=false;toolbar.hidden=false;}catch(e){if(current!==request)return;await signOut(auth);status.textContent='לא ניתן לטעון את המשימות לחשבון הזה. יש להיכנס לחשבון המורשה.';console.error(e.code||e.message)}});
+onAuthStateChanged(auth,async user=>{const current=++request;dash.replaceChildren();dash.hidden=true;toolbar.hidden=true;updbar.hidden=true;login.hidden=false;if(!user){status.textContent='';return;}status.textContent='בודק הרשאה וטוען את המשימות…';try{const snap=await get(ref(db,'dashboard'));if(!snap.exists())throw Error('empty');if(current!==request || auth.currentUser?.uid!==user.uid)return;const data=snap.val();dash.innerHTML=typeof data==='string'?data:data.html;dash.querySelectorAll('script,iframe,object,embed,form').forEach(x=>x.remove());dash.querySelectorAll('*').forEach(el=>[...el.attributes].forEach(a=>{if(a.name.startsWith('on'))el.removeAttribute(a.name)}));dash.querySelectorAll('a').forEach(a=>{if(!/^https:\/\//i.test(a.getAttribute('href')||''))a.removeAttribute('href');a.target='_blank';a.rel='noopener noreferrer'});dash.querySelectorAll('.chip').forEach(c=>{c.setAttribute('role','button');c.tabIndex=0;const act=()=>{dash.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');let f=c.dataset.f;dash.querySelectorAll('.it').forEach(it=>it.hidden=!(f==='all'||it.dataset.s===f));};c.onclick=act;c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act();}}});await loadStatuses();if(current!==request)return;injectIns();login.hidden=true;dash.hidden=false;toolbar.hidden=false;updbar.hidden=false;}catch(e){if(current!==request)return;await signOut(auth);status.textContent='לא ניתן לטעון את המשימות לחשבון הזה. יש להיכנס לחשבון המורשה.';console.error(e.code||e.message)}});
 </script></body></html>
